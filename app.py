@@ -354,6 +354,7 @@ def edit_training_submit(id):
     return redirect(url_for('admin_dashboard'))
 
 # --- ROTA FINAL PARA GERAR O CERTIFICADO ---
+# --- ROTA FINAL E CORRIGIDA PARA O AMBIENTE VERCEL ---
 @app.route('/admin/generate-certificate/<int:training_id>/<cpf>')
 def generate_certificate(training_id, cpf):
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
@@ -370,9 +371,9 @@ def generate_certificate(training_id, cpf):
     if not treinamento or not participante: return "<h1>Dados não encontrados para gerar o certificado.</h1>"
 
     texto_principal = """Certificamos, para os devidos fins, que {NOME_COOPERADO},
-portador(a) do CPF {CPF_COOPERADO}, participou com êxito do treinamento de
-'{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
-totalizando uma carga horária de {CARGA_HORARIA} horas."""
+    portador(a) do CPF {CPF_COOPERADO}, participou com êxito do treinamento de
+    '{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
+    totalizando uma carga horária de {CARGA_HORARIA} horas."""
 
     data_formatada = treinamento['data_hora'].strftime('%d de %B de %Y')
     texto_final = texto_principal.format(
@@ -402,11 +403,10 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
     largura, altura = img.size
     draw = ImageDraw.Draw(img)
     
-    # Desenha os textos
+    # Desenha os textos (nenhuma mudança aqui)
     titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
     titulo_x = (largura - (titulo_bbox[2] - titulo_bbox[0])) / 2
     draw.text((titulo_x, 1150), participante['nome'], font=font_titulo, fill='#00a5b6')
-
     y_text = 1350
     lines = wrap(texto_final, width=60)
     for line in lines:
@@ -414,20 +414,22 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
         line_x = (largura - (line_bbox[2] - line_bbox[0])) / 2
         draw.text((line_x, y_text), line, font=font_corpo, fill='black')
         y_text += 90
-
     data_final = f"Salvador, {data_formatada}"
     data_bbox = draw.textbbox((0, 0), data_final, font=font_data)
     data_x = largura - (data_bbox[2] - data_bbox[0]) - 250
     draw.text((data_x, altura - 400), data_final, font=font_data, fill='black')
 
-    if not os.path.exists(app.config['CERTIFICATE_FOLDER']):
-        os.makedirs(app.config['CERTIFICATE_FOLDER'])
-    
+    # --- MUDANÇA PRINCIPAL AQUI ---
+    # Definimos o caminho para a pasta temporária da Vercel
+    temp_dir = '/tmp'
     filename = f"certificado_{training_id}_{cpf}.pdf"
-    filepath = os.path.join(app.config['CERTIFICATE_FOLDER'], filename)
-    img.save(filepath, "PDF", resolution=100.0)
+    filepath = os.path.join(temp_dir, filename)
+    
+    # Salvamos o arquivo na pasta temporária
+    img.save(filepath, "PDF", resolution=150.0)
 
-    return send_from_directory(app.config['CERTIFICATE_FOLDER'], filename, as_attachment=False)
+    # Enviamos o arquivo da pasta temporária para o usuário
+    return send_from_directory(temp_dir, filename, as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
