@@ -117,18 +117,24 @@ def dashboard():
     cur.execute('SELECT id_treinamento FROM presencas WHERE cpf_cooperado = %s', (session.get('cpf'),))
     presencas_confirmadas = {row['id_treinamento'] for row in cur.fetchall()}
     
-    # --- NOVA LÓGICA AQUI ---
     cur.execute('SELECT id_treinamento FROM inscricoes WHERE cpf_cooperado = %s', (session.get('cpf'),))
     inscricoes_feitas = {row['id_treinamento'] for row in cur.fetchall()}
     
     cur.close()
     conn.close()
 
+    # Pega a data e hora atuais UMA VEZ para otimização
+    agora = datetime.now()
+
     for t in treinamentos:
         t['data_formatada'] = t['data_hora'].strftime('%d/%m/%Y às %H:%M')
         t['status_cooperado'] = 'futuro'
         t['is_finalizado'] = (t['status'] == 'encerrado')
-        t['inscrito'] = t['id'] in inscricoes_feitas # <-- Nova etiqueta!
+        t['inscrito'] = t['id'] in inscricoes_feitas
+        
+        # --- NOVA LÓGICA AQUI ---
+        # Adiciona a etiqueta que verifica se o treinamento já passou
+        t['ja_passou'] = t['data_hora'] < agora
 
         if t['id'] in presencas_confirmadas:
             t['status_cooperado'] = 'confirmada'
