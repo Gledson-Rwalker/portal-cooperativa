@@ -390,11 +390,29 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
     largura, altura = img.size
     draw = ImageDraw.Draw(img)
     
-    try:
-        font_titulo = ImageFont.truetype(os.path.join('static', 'Autography.ttf'), 140)
-        font_corpo = ImageFont.truetype(os.path.join('static', 'arial.ttf'), 70)
-        font_data = ImageFont.truetype(os.path.join('static', 'arial.ttf'), 50)
-    except IOError as e: return f"<h1>Erro ao carregar fonte: {e}.</h1>"
+        try:
+        # --- CORREÇÃO PRINCIPAL AQUI ---
+        # Construímos o caminho absoluto a partir da raiz do projeto Flask
+        base_path = app.root_path
+        font_titulo_path = os.path.join(base_path, 'static', 'Autography.ttf')
+        font_corpo_path = os.path.join(base_path, 'static', 'arial.ttf')
+        font_corpo_bold_path = os.path.join(base_path, 'static', 'arialbd.ttf')
+
+        font_titulo = ImageFont.truetype(font_titulo_path, 140)
+        font_corpo = ImageFont.truetype(font_corpo_path, 70)
+        font_data = ImageFont.truetype(font_corpo_path, 50)
+        # Também precisamos corrigir o caminho da imagem de fundo
+        background_path = os.path.join(base_path, 'static', 'certificate_assets', 'fundo_certificado.png')
+
+    except IOError as e:
+        return f"<h1>Erro ao carregar fonte ou imagem: {e}. Verifique se o arquivo está na pasta 'static' e se o nome está correto.</h1>"
+
+    if not os.path.exists(background_path):
+        return "<h1>Erro: Imagem de fundo não encontrada.</h1>"
+
+    img = Image.open(background_path).convert('RGB')
+    largura, altura = img.size
+    draw = ImageDraw.Draw(img)
 
     # Desenha os textos
     titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
