@@ -357,7 +357,6 @@ def edit_training_submit(id):
 @app.route('/admin/generate-certificate/<int:training_id>/<cpf>')
 def generate_certificate(training_id, cpf):
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
-    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('SELECT * FROM treinamentos WHERE id = %s', (training_id,))
