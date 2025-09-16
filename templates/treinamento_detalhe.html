@@ -27,7 +27,7 @@
 
         <div>
             <h3>Lista de Presença</h3>
-            {% if treinamento.presenca_liberada == 'sim' %}
+            {% if treinamento.presenca_liberada %}
                 {% if presenca_ja_confirmada %}
                     <p style="color: #198754; font-weight: bold;">Sua presença foi confirmada com sucesso!</p>
                 {% else %}
