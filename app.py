@@ -111,7 +111,11 @@ def dashboard():
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    cur.execute('SELECT * FROM treinamentos ORDER BY data_hora DESC')
+    cur.execute("""
+        SELECT * FROM treinamentos 
+        WHERE status = 'ativo' OR (status = 'encerrado' AND data_hora > NOW() - INTERVAL '30 days')
+        ORDER BY data_hora DESC
+    """)
     treinamentos = cur.fetchall()
     
     cur.execute('SELECT id_treinamento FROM presencas WHERE cpf_cooperado = %s', (session.get('cpf'),))
