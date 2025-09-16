@@ -12,13 +12,11 @@
     <div class="main-actions">
         <a href="{{ url_for('add_training_page') }}" class="btn btn-primary">Adicionar Novo Treinamento</a>
         <button id="openImportModal" class="btn btn-success">Importar Cooperados</button>
-        <!-- --- NOVO BOTÃO AQUI --- -->
         <a href="{{ url_for('view_cooperados') }}" class="btn btn-info">Visualizar Cooperados</a>
     </div>
 
     <h3>Treinamentos Cadastrados</h3>
     
-    <!-- A TABELA QUE ESTAVA FALTANDO -->
     <table class="table">
         <thead>
             <tr>
@@ -67,16 +65,14 @@
     </table>
 </div>
 
-<!-- A JANELA MODAL (COMEÇA ESCONDIDA) -->
+<!-- A JANELA MODAL -->
 <div id="importModal" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
         <h2>Importar e Atualizar Cooperados</h2>
-        
-        <!-- --- TEXTO CORRIGIDO AQUI --- -->
         <p><strong>Atenção:</strong> Este processo <strong>adicionará novos cooperados</strong> à lista existente.</p>
         <p>Cooperados com CPF já cadastrado serão ignorados para evitar duplicatas.</p>
-        <p>O arquivo CSV deve ter duas colunas, nesta ordem: <strong>Nome Completo, CPF</strong> (sem cabeçalho).</p>
+        <p>O arquivo CSV deve ter duas colunas, nesta ordem: <strong>Nome Completo;CPF</strong> (separado por ponto e vírgula e sem cabeçalho).</p>
         
         <form action="{{ url_for('import_cooperados') }}" method="post" enctype="multipart/form-data">
             <div class="form-group">
@@ -88,7 +84,7 @@
     </div>
 </div>
 
-<!-- JAVASCRIPT PARA CONTROLAR A MODAL (DEIXE-O AQUI) -->
+<!-- JAVASCRIPT PARA CONTROLAR A MODAL -->
 <script>
     const modal = document.getElementById('importModal');
     const openBtn = document.getElementById('openImportModal');
