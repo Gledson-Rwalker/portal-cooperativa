@@ -100,7 +100,7 @@ def dashboard():
     conn.close()
 
     for t in treinamentos:
-        t['data_formatada'] = t['data_hora'].strftime('%d de %B de %Y às %H:%M')
+        t['data_formatada'] = t['data_hora'].strftime('%d/%m/%Y às %H:%M')
         
         # --- LÓGICA DE STATUS ATUALIZADA ---
         t['status_cooperado'] = 'futuro' # Começamos com o padrão
@@ -130,7 +130,7 @@ def detalhe_treinamento(id):
     conn.close()
 
     if treinamento:
-        treinamento['data_formatada'] = treinamento['data_hora'].strftime('%d de %B de %Y às %H:%M')
+        data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
         mostrar_botao = (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
         return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada)
     else: return "<h1>Treinamento não encontrado!</h1>", 404
@@ -305,6 +305,11 @@ def add_training_page():
 @app.route('/admin/add', methods=['POST'])
 def add_training_submit():
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
+     # --- MUDANÇA PRINCIPAL AQUI ---
+    # 1. Pega a data do formulário no formato brasileiro
+    data_hora_str = request.form['data_hora']
+    # 2. Converte a string 'DD/MM/AAAA HH:MM' para um objeto de data que o Python entende
+    data_hora_obj = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
@@ -336,12 +341,20 @@ def edit_training_page(id):
     treinamento = cur.fetchone()
     cur.close()
     conn.close()
-    if treinamento: return render_template('edit_training.html', treinamento=treinamento)
-    else: return "<h1>Treinamento não encontrado!</h1>"
+    if treinamento:
+        # --- MUDANÇA PRINCIPAL AQUI ---
+        # Formata a data para o formato de input brasileiro ANTES de enviar para o template
+        treinamento['data_hora_input'] = treinamento['data_hora'].strftime('%d/%m/%Y %H:%M')
+        return render_template('edit_training.html', treinamento=treinamento)
+    else: return "<h1>Treinamento não encontrado!</h1>""
 
 @app.route('/admin/edit/<int:id>', methods=['POST'])
 def edit_training_submit(id):
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
+     # --- MUDANÇA PRINCIPAL AQUI ---
+    data_hora_str = request.form['data_hora']
+    data_hora_obj = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
+
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
@@ -375,7 +388,7 @@ def generate_certificate(training_id, cpf):
     '{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
     totalizando uma carga horária de {CARGA_HORARIA} horas."""
 
-    data_formatada = treinamento['data_hora'].strftime('%d de %B de %Y')
+    data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y')
     texto_final = texto_principal.format(
         NOME_COOPERADO=participante['nome'],
         CPF_COOPERADO=participante['cpf'],
