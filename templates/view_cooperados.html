@@ -30,7 +30,7 @@
                 <td>{{ cooperado.telefone }}</td>
                 <td>{{ cooperado.numero_conselho }}</td>
                 <td>
-                    {% if cooperado.perfil_completo == 'sim' %}
+                    {% if cooperado.perfil_completo %}
                         <span class="badge bg-success">Sim</span>
                     {% else %}
                         <span class="badge bg-danger">Não</span>
