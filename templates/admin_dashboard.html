@@ -32,12 +32,13 @@
                 <td>{{ t.titulo }}</td>
                 <td>{{ t.data_hora }}</td>
                 <td>
+                    <!-- --- ESTRUTURA CORRIGIDA AQUI --- -->
                     <div class="action-buttons">
                         {% if t.status == 'encerrado' %}
                             <span class="badge bg-secondary">Encerrado</span>
                         {% else %}
                             <form action="{{ url_for('toggle_presenca', id=t.id) }}" method="post">
-                                {% if t.presenca_liberada == 'sim' %}
+                                {% if t.presenca_liberada %}
                                     <button type="submit" class="btn btn-sm btn-warning">Bloquear</button>
                                 {% else %}
                                     <button type="submit" class="btn btn-sm btn-success">Liberar</button>
@@ -48,6 +49,7 @@
                     </div>
                 </td>
                 <td>
+                    <!-- --- ESTRUTURA CORRIGIDA AQUI --- -->
                     <div class="action-buttons">
                         <a href="{{ url_for('ver_lista_presenca', id=t.id) }}" class="btn btn-sm btn-primary">Certificados</a>
                         {% if t.status != 'encerrado' %}
