@@ -233,3 +233,43 @@ body {
     background-color: #cff4fc;
     border-color: #b6effb;
 }
+
+/* --- REGRAS DE RESPONSIVIDADE PARA CELULARES --- */
+
+/* Esta regra se aplica a qualquer tela com largura de 768px ou menos */
+@media (max-width: 768px) {
+
+    /* Diminui as margens do container principal para aproveitar melhor a tela */
+    .container {
+        margin: 1rem;
+        padding: 1rem;
+    }
+
+    /* Faz o cabeçalho quebrar a linha se necessário */
+    .header {
+        flex-direction: column; /* Empilha os itens verticalmente */
+        align-items: flex-start; /* Alinha à esquerda */
+        gap: 10px; /* Adiciona um espaço entre os itens empilhados */
+    }
+
+    /* Faz os botões de ação principais ocuparem a largura total */
+    .main-actions {
+        flex-direction: column;
+    }
+    .main-actions .btn {
+        width: 100%;
+        margin-bottom: 5px;
+    }
+
+    /* Força a tabela a não estourar a tela */
+    .table {
+        display: block;
+        overflow-x: auto; /* Adiciona uma barra de rolagem horizontal APENAS na tabela, se necessário */
+        white-space: nowrap; /* Impede que o texto dos botões quebre a linha */
+    }
+
+    /* Ajusta o tamanho da logo no cabeçalho para telas menores */
+    .logo {
+        height: 40px;
+    }
+}
