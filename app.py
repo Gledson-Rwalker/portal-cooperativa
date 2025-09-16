@@ -7,7 +7,11 @@ from PIL import Image, ImageDraw, ImageFont
 from flask import Flask, render_template, request, redirect, url_for, session, send_from_directory, flash
 
 # --- CONFIGURAÇÕES GERAIS ---
-locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+# Tenta configurar o local para Português do Brasil, mas não quebra se não conseguir
+try:
+    locale.setlocale(locale.LC_TIME, 'pt_BR.UTF-8')
+except locale.Error:
+    print("Locale pt_BR.UTF-8 not supported, continuing with default locale.")
 app = Flask(__name__)
 app.secret_key = 'minha_chave_secreta_muito_segura_12345'
 app.config['CERTIFICATE_FOLDER'] = 'certificates'
