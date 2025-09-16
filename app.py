@@ -32,7 +32,7 @@ def get_db_connection():
 # --- FUNÇÃO AUXILIAR PARA LIMPAR CPFS ---
 def sanitize_cpf(cpf_string):
     """Remove pontos, hífens e espaços de uma string de CPF."""
-    return cpf_string.replace('.', '').replace('-', '').replace(' ', '')
+    return str(cpf_string).replace('.', '').replace('-', '').replace(' ', '')
 
 # ===============================================
 # ROTAS PARA COOPERADOS
@@ -101,14 +101,12 @@ def dashboard():
 
     for t in treinamentos:
         t['data_formatada'] = t['data_hora'].strftime('%d/%m/%Y às %H:%M')
-        
-        # --- LÓGICA DE STATUS ATUALIZADA ---
-        t['status_cooperado'] = 'futuro' # Começamos com o padrão
-        t['is_finalizado'] = (t['status'] == 'encerrado') # Nova etiqueta!
+        t['status_cooperado'] = 'futuro'
+        t['is_finalizado'] = (t['status'] == 'encerrado')
 
         if t['id'] in presencas_confirmadas:
             t['status_cooperado'] = 'confirmada'
-        elif t['status'] == 'encerrado': # A lógica de "faltou" continua a mesma
+        elif t['status'] == 'encerrado':
             t['status_cooperado'] = 'faltou'
             
     return render_template('dashboard.html', nome=session.get('nome'), treinamentos=treinamentos)
@@ -130,7 +128,7 @@ def detalhe_treinamento(id):
     conn.close()
 
     if treinamento:
-        data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
+        treinamento['data_formatada'] = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
         mostrar_botao = (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
         return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada)
     else: return "<h1>Treinamento não encontrado!</h1>", 404
@@ -148,7 +146,6 @@ def confirmar_presenca(id):
         )
         conn.commit()
     except psycopg2.IntegrityError:
-        # Ignora o erro se o usuário tentar confirmar a presença duas vezes
         conn.rollback()
     finally:
         cur.close()
@@ -241,12 +238,9 @@ def import_cooperados():
     
     return redirect(url_for('admin_dashboard'))
 
-# (O resto das rotas de admin, como add, edit, delete, etc., também precisam ser atualizadas)
-# ... (código completo na próxima resposta)
 @app.route('/admin/cooperados')
 def view_cooperados():
-    if not session.get('logged_in') or not session.get('is_admin'):
-        return redirect(url_for('admin_login_page'))
+    if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('SELECT * FROM cooperados ORDER BY nome')
@@ -284,9 +278,8 @@ def ver_lista_presenca(id):
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('SELECT * FROM treinamentos WHERE id = %s', (id,))
     treinamento_atual = cur.fetchone()
-    # Usamos JOIN para buscar os dados completos dos cooperados que confirmaram presença
     cur.execute('''
-        SELECT c.nome, c.cpf, c.email, c.telefone, p.data_hora_registro
+        SELECT c.nome, c.cpf
         FROM presencas p
         JOIN cooperados c ON p.cpf_cooperado = c.cpf
         WHERE p.id_treinamento = %s
@@ -305,16 +298,13 @@ def add_training_page():
 @app.route('/admin/add', methods=['POST'])
 def add_training_submit():
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
-     # --- MUDANÇA PRINCIPAL AQUI ---
-    # 1. Pega a data do formulário no formato brasileiro
     data_hora_str = request.form['data_hora']
-    # 2. Converte a string 'DD/MM/AAAA HH:MM' para um objeto de data que o Python entende
     data_hora_obj = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
         'INSERT INTO treinamentos (titulo, data_hora, descricao, link_meet, instrutor, carga_horaria) VALUES (%s, %s, %s, %s, %s, %s)',
-        (request.form['titulo'], request.form['data_hora'], request.form['descricao'], request.form['link_meet'], request.form['instrutor'], request.form['carga_horaria'])
+        (request.form['titulo'], data_hora_obj, request.form['descricao'], request.form['link_meet'], request.form['instrutor'], request.form['carga_horaria'])
     )
     conn.commit()
     cur.close()
@@ -342,32 +332,26 @@ def edit_training_page(id):
     cur.close()
     conn.close()
     if treinamento:
-        # --- MUDANÇA PRINCIPAL AQUI ---
-        # Formata a data para o formato de input brasileiro ANTES de enviar para o template
         treinamento['data_hora_input'] = treinamento['data_hora'].strftime('%d/%m/%Y %H:%M')
         return render_template('edit_training.html', treinamento=treinamento)
-    else: return "<h1>Treinamento não encontrado!</h1>""
+    else: return "<h1>Treinamento não encontrado!</h1>"
 
 @app.route('/admin/edit/<int:id>', methods=['POST'])
 def edit_training_submit(id):
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
-     # --- MUDANÇA PRINCIPAL AQUI ---
     data_hora_str = request.form['data_hora']
     data_hora_obj = datetime.strptime(data_hora_str, '%d/%m/%Y %H:%M')
-
     conn = get_db_connection()
     cur = conn.cursor()
     cur.execute(
         'UPDATE treinamentos SET titulo=%s, data_hora=%s, descricao=%s, link_meet=%s, instrutor=%s, carga_horaria=%s WHERE id=%s',
-        (request.form['titulo'], request.form['data_hora'], request.form['descricao'], request.form['link_meet'], request.form['instrutor'], request.form['carga_horaria'], id)
+        (request.form['titulo'], data_hora_obj, request.form['descricao'], request.form['link_meet'], request.form['instrutor'], request.form['carga_horaria'], id)
     )
     conn.commit()
     cur.close()
     conn.close()
     return redirect(url_for('admin_dashboard'))
 
-# --- ROTA FINAL PARA GERAR O CERTIFICADO ---
-# --- ROTA FINAL E CORRIGIDA PARA O AMBIENTE VERCEL ---
 @app.route('/admin/generate-certificate/<int:training_id>/<cpf>')
 def generate_certificate(training_id, cpf):
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
@@ -384,9 +368,9 @@ def generate_certificate(training_id, cpf):
     if not treinamento or not participante: return "<h1>Dados não encontrados para gerar o certificado.</h1>"
 
     texto_principal = """Certificamos, para os devidos fins, que {NOME_COOPERADO},
-    portador(a) do CPF {CPF_COOPERADO}, participou com êxito do treinamento de
-    '{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
-    totalizando uma carga horária de {CARGA_HORARIA} horas."""
+portador(a) do CPF {CPF_COOPERADO}, participou com êxito do treinamento de
+'{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
+totalizando uma carga horária de {CARGA_HORARIA} horas."""
 
     data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y')
     texto_final = texto_principal.format(
@@ -416,10 +400,10 @@ def generate_certificate(training_id, cpf):
     largura, altura = img.size
     draw = ImageDraw.Draw(img)
     
-    # Desenha os textos (nenhuma mudança aqui)
     titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
     titulo_x = (largura - (titulo_bbox[2] - titulo_bbox[0])) / 2
     draw.text((titulo_x, 1150), participante['nome'], font=font_titulo, fill='#00a5b6')
+
     y_text = 1350
     lines = wrap(texto_final, width=60)
     for line in lines:
@@ -427,21 +411,18 @@ def generate_certificate(training_id, cpf):
         line_x = (largura - (line_bbox[2] - line_bbox[0])) / 2
         draw.text((line_x, y_text), line, font=font_corpo, fill='black')
         y_text += 90
+
     data_final = f"Salvador, {data_formatada}"
     data_bbox = draw.textbbox((0, 0), data_final, font=font_data)
     data_x = largura - (data_bbox[2] - data_bbox[0]) - 250
     draw.text((data_x, altura - 400), data_final, font=font_data, fill='black')
 
-    # --- MUDANÇA PRINCIPAL AQUI ---
-    # Definimos o caminho para a pasta temporária da Vercel
     temp_dir = '/tmp'
     filename = f"certificado_{training_id}_{cpf}.pdf"
     filepath = os.path.join(temp_dir, filename)
     
-    # Salvamos o arquivo na pasta temporária
     img.save(filepath, "PDF", resolution=150.0)
 
-    # Enviamos o arquivo da pasta temporária para o usuário
     return send_from_directory(temp_dir, filename, as_attachment=True)
 
 if __name__ == '__main__':
