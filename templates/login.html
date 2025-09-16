@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+
+{% block title %}Login do Cooperado{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h2>Acesso ao Portal</h2>
+    </div>
+    <form action="/login" method="post">
+        <div class="form-group">
+            <label for="cpf">Digite seu CPF (apenas números)</label>
+            <input type="text" id="cpf" name="cpf" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Entrar</button>
+    </form>
+</div>
+{% endblock %}

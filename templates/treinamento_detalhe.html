@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard de Treinamentos{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="header">
+            <h1>{{ treinamento.titulo }}</h1>
+        </div>
+        
+        <p><strong>Data:</strong> {{ data_formatada }}</p>
+        <p><strong>Instrutor:</strong> {{ treinamento.instrutor }}</p>
+        <p>{{ treinamento.descricao }}</p>
+
+        <hr>
+        
+        <div>
+            <h3>Acesso à Sala Virtual</h3>
+            {% if mostrar_botao %}
+                <a href="{{ treinamento.link_meet }}" class="btn btn-success" target="_blank">ENTRAR NA SALA</a>
+            {% else %}
+                <p>O botão para acessar o treinamento aparecerá aqui 15 minutos antes do início.</p>
+            {% endif %}
+        </div>
+
+        <hr>
+
+        <div>
+            <h3>Lista de Presença</h3>
+            {% if treinamento.presenca_liberada == 'sim' %}
+                {% if presenca_ja_confirmada %}
+                    <p style="color: #198754; font-weight: bold;">Sua presença foi confirmada com sucesso!</p>
+                {% else %}
+                    <form action="{{ url_for('confirmar_presenca', id=treinamento.id) }}" method="post">
+                        <button type="submit" class="btn btn-primary">Confirmar Minha Presença</button>
+                    </form>
+                {% endif %}
+            {% else %}
+                <p>A lista de presença será liberada pelo instrutor ao final do treinamento.</p>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 1rem;">Voltar para a Lista</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,10 @@
+# Arquivos de cache do Python
+__pycache__/
+*.pyc
+
+# Pasta de certificados gerados
+certificates/
+
+# Arquivos de ambiente virtual (se você usar um)
+venv/
+.env

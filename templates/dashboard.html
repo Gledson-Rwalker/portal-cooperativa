@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+{% block title %}Painel do Cooperado{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h2>Bem-vindo(a), {{ nome }}!</h2>
+        <a href="/logout" class="btn btn-danger">Sair</a>
+    </div>
+    <h3>Próximos Treinamentos Disponíveis</h3>
+    <ul style="list-style: none; padding: 0;">
+        {% for t in treinamentos %}
+            <li style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px;">
+                <h4>
+                    <a href="{{ url_for('detalhe_treinamento', id=t.id) }}">{{ t.titulo }}</a>
+                    {% if t.status_cooperado == 'confirmada' %}
+                        <span class="badge bg-success">Presença Confirmada</span>
+                    {% elif t.status_cooperado == 'faltou' %}
+                        <span class="badge bg-danger">Faltou</span>
+                    {% endif %}
+                </h4>
+                <p><strong>Data:</strong> {{ t.data_formatada }}</p>
+                <p><strong>Instrutor:</strong> {{ t.instrutor }}</p>
+                <p>{{ t.descricao }}</p>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}

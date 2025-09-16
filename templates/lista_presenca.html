@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+
+{% block title %}Lista de Presença{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="header">
+            <h2>Lista de Presença: {{ treinamento.titulo }}</h2>
+        </div>
+        <p>Total de participantes: {{ participantes|length }}</p>
+        <table class="table presence-table">
+            <thead>
+                <tr>
+                    <th>Nome Completo</th>
+                    <th>CPF</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in participantes %}
+                <tr>
+                    <td>{{ p.nome_cooperado }}</td>
+                    <td>{{ p.cpf_cooperado }}</td>
+                    <td>
+                        <a href="{{ url_for('generate_certificate', training_id=treinamento.id, cpf=p.cpf_cooperado) }}" class="btn btn-sm btn-success" target="_blank">
+                            Gerar Certificado
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary" style="margin-top: 1rem;">Voltar ao Painel</a>
+    </div>
+{% endblock %}

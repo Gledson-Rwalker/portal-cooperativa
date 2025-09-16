@@ -1,0 +1,105 @@
+{% extends "layout.html" %}
+
+{% block title %}Painel do Administrador{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h2>Painel Administrador</h2>
+        <a href="/logout" class="btn btn-danger">Sair</a>
+    </div>
+    
+    <div class="main-actions">
+        <a href="{{ url_for('add_training_page') }}" class="btn btn-primary">Adicionar Novo Treinamento</a>
+        <button id="openImportModal" class="btn btn-success">Importar Cooperados</button>
+        <!-- --- NOVO BOTÃO AQUI --- -->
+        <a href="{{ url_for('view_cooperados') }}" class="btn btn-info">Visualizar Cooperados</a>
+    </div>
+
+    <h3>Treinamentos Cadastrados</h3>
+    
+    <!-- A TABELA QUE ESTAVA FALTANDO -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Data e Hora</th>
+                <th>Presença</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in treinamentos %}
+            <tr>
+                <td>{{ t.titulo }}</td>
+                <td>{{ t.data_hora }}</td>
+                <td>
+                    <div class="action-buttons">
+                        {% if t.status == 'encerrado' %}
+                            <span class="badge bg-secondary">Encerrado</span>
+                        {% else %}
+                            <form action="{{ url_for('toggle_presenca', id=t.id) }}" method="post">
+                                {% if t.presenca_liberada == 'sim' %}
+                                    <button type="submit" class="btn btn-sm btn-warning">Bloquear</button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-sm btn-success">Liberar</button>
+                                {% endif %}
+                            </form>
+                        {% endif %}
+                        <a href="{{ url_for('ver_lista_presenca', id=t.id) }}" class="btn btn-sm btn-info">Ver Lista</a>
+                    </div>
+                </td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{{ url_for('ver_lista_presenca', id=t.id) }}" class="btn btn-sm btn-primary">Certificados</a>
+                        {% if t.status != 'encerrado' %}
+                            <form action="{{ url_for('encerrar_treinamento', id=t.id) }}" method="post" onsubmit="return confirm('Tem certeza?');">
+                                <button type="submit" class="btn btn-sm btn-secondary">Encerrar</button>
+                            </form>
+                        {% endif %}
+                        <a href="{{ url_for('edit_training_page', id=t.id) }}" class="btn btn-sm btn-info">Editar</a>
+                        <a href="{{ url_for('delete_training', id=t.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?');">Excluir</a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- A JANELA MODAL (COMEÇA ESCONDIDA) -->
+<div id="importModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Importar e Atualizar Cooperados</h2>
+        
+        <!-- --- TEXTO CORRIGIDO AQUI --- -->
+        <p><strong>Atenção:</strong> Este processo <strong>adicionará novos cooperados</strong> à lista existente.</p>
+        <p>Cooperados com CPF já cadastrado serão ignorados para evitar duplicatas.</p>
+        <p>O arquivo CSV deve ter duas colunas, nesta ordem: <strong>Nome Completo, CPF</strong> (sem cabeçalho).</p>
+        
+        <form action="{{ url_for('import_cooperados') }}" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="csv_file">Selecione o arquivo CSV</label>
+                <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Atualizar Lista</button>
+        </form>
+    </div>
+</div>
+
+<!-- JAVASCRIPT PARA CONTROLAR A MODAL (DEIXE-O AQUI) -->
+<script>
+    const modal = document.getElementById('importModal');
+    const openBtn = document.getElementById('openImportModal');
+    const closeBtn = document.querySelector('.close-button');
+
+    openBtn.onclick = function() { modal.style.display = 'block'; }
+    closeBtn.onclick = function() { modal.style.display = 'none'; }
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}
