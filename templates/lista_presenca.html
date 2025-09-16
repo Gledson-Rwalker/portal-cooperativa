@@ -19,11 +19,12 @@
             <tbody>
                 {% for p in participantes %}
                 <tr>
-                    <td>{{ p.nome_cooperado }}</td>
-                    <td>{{ p.cpf_cooperado }}</td>
+                    <td>{{ p.nome }}</td>
+                    <td>{{ p.cpf }}</td>
                     <td>
-                        <a href="{{ url_for('generate_certificate', training_id=treinamento.id, cpf=p.cpf_cooperado) }}" class="btn btn-sm btn-success" target="_blank">
-                            Gerar Certificado
+                        <a href="{{ url_for('generate_certificate', training_id=treinamento.id, cpf=p.cpf) }}"
+                        class="btn btn-sm btn-success" target="_blank">
+                        Gerar Certificado
                         </a>
                     </td>
                 </tr>
