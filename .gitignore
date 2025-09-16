@@ -2,8 +2,11 @@
 __pycache__/
 *.pyc
 
-# Pasta de certificados gerados
+# Pasta de certificados gerados (MUITO IMPORTANTE)
 certificates/
+
+# Pasta de uploads (Boa prática ignorar também)
+static/uploads/
 
 # Arquivos de ambiente virtual (se você usar um)
 venv/
