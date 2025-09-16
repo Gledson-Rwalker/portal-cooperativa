@@ -223,6 +223,44 @@ def admin_dashboard():
     conn.close()
     return render_template('admin_dashboard.html', treinamentos=treinamentos)
 
+# --- NOVA ROTA PARA VER OS DETALHES DE UM COOPERADO ---
+@app.route('/admin/cooperado/<cpf>')
+def detalhe_cooperado(cpf):
+    if not session.get('logged_in') or not session.get('is_admin'):
+        return redirect(url_for('admin_login_page'))
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # 1. Busca os dados do perfil do cooperado
+    cur.execute('SELECT * FROM cooperados WHERE cpf = %s', (cpf,))
+    cooperado = cur.fetchone()
+
+    if not cooperado:
+        cur.close()
+        conn.close()
+        return "<h1>Cooperado não encontrado.</h1>"
+
+    # 2. Busca o histórico de treinamentos do cooperado
+    # Usamos um LEFT JOIN para pegar todos os treinamentos encerrados e verificar se o cooperado participou
+    cur.execute("""
+        SELECT 
+            t.titulo, 
+            t.data_hora,
+            -- Verifica se existe uma entrada correspondente na tabela de presenças
+            (p.cpf_cooperado IS NOT NULL) AS presenca_confirmada
+        FROM treinamentos t
+        LEFT JOIN presencas p ON t.id = p.id_treinamento AND p.cpf_cooperado = %s
+        WHERE t.status = 'encerrado'
+        ORDER BY t.data_hora DESC
+    """, (cpf,))
+    historico = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template('detalhe_cooperado.html', cooperado=cooperado, historico=historico)
+
 @app.route('/admin/import-cooperados', methods=['POST'])
 def import_cooperados():
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))

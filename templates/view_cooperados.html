@@ -10,25 +10,28 @@
     </div>
     <p>Total de cooperados na base: <strong>{{ cooperados|length }}</strong></p>
     
-    <table class="table">
+    <!-- --- BARRA DE FILTRO ADICIONADA AQUI --- -->
+    <div class="form-group">
+        <label for="searchInput">Buscar por Nome ou CPF:</label>
+        <input type="text" id="searchInput" class="form-control" onkeyup="filterTable()" placeholder="Digite para buscar...">
+    </div>
+    
+    <table class="table" id="cooperadosTable">
         <thead>
             <tr>
                 <th>Nome Completo</th>
                 <th>CPF</th>
                 <th>Email</th>
-                <th>Telefone</th>
-                <th>Nº Conselho</th>
                 <th>Perfil Completo?</th>
             </tr>
         </thead>
         <tbody>
             {% for cooperado in cooperados %}
             <tr>
-                <td>{{ cooperado.nome }}</td>
+                <!-- O nome agora é um link para a nova página de detalhes -->
+                <td><a href="{{ url_for('detalhe_cooperado', cpf=cooperado.cpf) }}">{{ cooperado.nome }}</a></td>
                 <td>{{ cooperado.cpf }}</td>
                 <td>{{ cooperado.email }}</td>
-                <td>{{ cooperado.telefone }}</td>
-                <td>{{ cooperado.numero_conselho }}</td>
                 <td>
                     {% if cooperado.perfil_completo %}
                         <span class="badge bg-success">Sim</span>
@@ -41,4 +44,27 @@
         </tbody>
     </table>
 </div>
+
+<!-- JAVASCRIPT PARA O FILTRO EM TEMPO REAL -->
+<script>
+function filterTable() {
+    const input = document.getElementById("searchInput");
+    const filter = input.value.toUpperCase();
+    const table = document.getElementById("cooperadosTable");
+    const tr = table.getElementsByTagName("tr");
+
+    for (let i = 1; i < tr.length; i++) { // Começa em 1 para pular o cabeçalho
+        let tdNome = tr[i].getElementsByTagName("td")[0];
+        let tdCpf = tr[i].getElementsByTagName("td")[1];
+        if (tdNome || tdCpf) {
+            let txtValue = (tdNome.textContent || tdNome.innerText) + " " + (tdCpf.textContent || tdCpf.innerText);
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                tr[i].style.display = "";
+            } else {
+                tr[i].style.display = "none";
+            }
+        }       
+    }
+}
+</script>
 {% endblock %}

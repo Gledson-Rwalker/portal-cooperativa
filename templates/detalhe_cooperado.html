@@ -1,0 +1,54 @@
+{% extends "layout.html" %}
+
+{% block title %}Detalhes de {{ cooperado.nome }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h2>Perfil do Cooperado</h2>
+        <a href="{{ url_for('view_cooperados') }}" class="btn btn-secondary">Voltar para a Lista</a>
+    </div>
+
+    <!-- Seção de Informações do Perfil -->
+    <div class="profile-section">
+        <h4>{{ cooperado.nome }}</h4>
+        <p><strong>CPF:</strong> {{ cooperado.cpf }}</p>
+        <p><strong>Email:</strong> {{ cooperado.email or 'Não informado' }}</p>
+        <p><strong>Telefone:</strong> {{ cooperado.telefone or 'Não informado' }}</p>
+        <p><strong>Nº Conselho:</strong> {{ cooperado.numero_conselho or 'Não informado' }}</p>
+    </div>
+
+    <hr>
+
+    <!-- Seção do Histórico de Treinamentos -->
+    <h4>Histórico de Treinamentos</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Treinamento</th>
+                <th>Data</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in historico %}
+            <tr>
+                <td>{{ t.titulo }}</td>
+                <td>{{ t.data_hora.strftime('%d/%m/%Y') }}</td>
+                <td>
+                    {% if t.presenca_confirmada %}
+                        <span class="badge bg-success">Presença Confirmada</span>
+                    {% else %}
+                        <span class="badge bg-danger">Faltou</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="3">Este cooperado não participou de nenhum treinamento encerrado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
