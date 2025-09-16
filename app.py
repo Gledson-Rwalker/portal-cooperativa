@@ -357,6 +357,7 @@ def edit_training_submit(id):
 @app.route('/admin/generate-certificate/<int:training_id>/<cpf>')
 def generate_certificate(training_id, cpf):
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
+    
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     cur.execute('SELECT * FROM treinamentos WHERE id = %s', (training_id,))
@@ -382,27 +383,15 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
         CARGA_HORARIA=treinamento['carga_horaria']
     )
 
-    background_path = os.path.join('static', 'certificate_assets', 'fundo_certificado.png')
-    if not os.path.exists(background_path): return "<h1>Erro: Imagem de fundo não encontrada.</h1>"
-    
-    img = Image.open(background_path).convert('RGB')
-    largura, altura = img.size
-    draw = ImageDraw.Draw(img)
-    
-        try:
-        # --- CORREÇÃO PRINCIPAL AQUI ---
-        # Construímos o caminho absoluto a partir da raiz do projeto Flask
+    try:
         base_path = app.root_path
         font_titulo_path = os.path.join(base_path, 'static', 'Autography.ttf')
         font_corpo_path = os.path.join(base_path, 'static', 'arial.ttf')
-        font_corpo_bold_path = os.path.join(base_path, 'static', 'arialbd.ttf')
+        background_path = os.path.join(base_path, 'static', 'certificate_assets', 'fundo_certificado.png')
 
         font_titulo = ImageFont.truetype(font_titulo_path, 140)
         font_corpo = ImageFont.truetype(font_corpo_path, 70)
         font_data = ImageFont.truetype(font_corpo_path, 50)
-        # Também precisamos corrigir o caminho da imagem de fundo
-        background_path = os.path.join(base_path, 'static', 'certificate_assets', 'fundo_certificado.png')
-
     except IOError as e:
         return f"<h1>Erro ao carregar fonte ou imagem: {e}. Verifique se o arquivo está na pasta 'static' e se o nome está correto.</h1>"
 
@@ -412,7 +401,7 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
     img = Image.open(background_path).convert('RGB')
     largura, altura = img.size
     draw = ImageDraw.Draw(img)
-
+    
     # Desenha os textos
     titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
     titulo_x = (largura - (titulo_bbox[2] - titulo_bbox[0])) / 2
