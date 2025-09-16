@@ -131,7 +131,7 @@ def detalhe_treinamento(id):
 
     if treinamento:
         treinamento['data_formatada'] = treinamento['data_hora'].strftime('%d de %B de %Y às %H:%M')
-        mostrar_botao = (treinamento['data_hora'] - timedelta(minutes=15)) <= datetime.now()
+        mostrar_botao = (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
         return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada)
     else: return "<h1>Treinamento não encontrado!</h1>", 404
 

@@ -17,7 +17,7 @@
         <div>
             <h3>Acesso à Sala Virtual</h3>
             {% if mostrar_botao %}
-                <a href="{{ treinamento.link_meet }}" class="btn btn-success" target="_blank">ENTRAR NA SALA</a>
+                <a href="//{{ treinamento.link_meet.replace('https://', '').replace('http://', '') }}" class="btn btn-success" target="_blank">ENTRAR NA SALA</a>
             {% else %}
                 <p>O botão para acessar o treinamento aparecerá aqui 15 minutos antes do início.</p>
             {% endif %}
