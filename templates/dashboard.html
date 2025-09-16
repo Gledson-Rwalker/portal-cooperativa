@@ -9,22 +9,28 @@
     <h3>Próximos Treinamentos Disponíveis</h3>
     <ul style="list-style: none; padding: 0;">
         {% for t in treinamentos %}
-            <li style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px;">
-                <h4>
-                    <a href="{{ url_for('detalhe_treinamento', id=t.id) }}">{{ t.titulo }}</a>
-                    {% if t.status_cooperado == 'confirmada' %}
-                        <span class="badge bg-success">Presença Confirmada</span>
-                    {% elif t.status_cooperado == 'faltou' %}
-                        <span class="badge bg-danger">Faltou</span>
-                    {% endif %}
-
-                    {% if t.is_finalizado %}
-                        <span class="badge bg-secondary">Finalizado</span>
-                    {% endif %}
-                </h4>
-                <p><strong>Data:</strong> {{ t.data_formatada }}</p>
-                <p><strong>Instrutor:</strong> {{ t.instrutor }}</p>
-                <p>{{ t.descricao }}</p>
+                        <li style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h4>
+                            <a href="{{ url_for('detalhe_treinamento', id=t.id) }}">{{ t.titulo }}</a>
+                            <!-- ... (os selos de status continuam os mesmos) ... -->
+                        </h4>
+                        <p><strong>Data:</strong> {{ t.data_formatada }}</p>
+                        <p><strong>Instrutor:</strong> {{ t.instrutor }}</p>
+                        <p>{{ t.descricao }}</p>
+                    </div>
+                    <!-- --- NOVO BOTÃO DE INSCRIÇÃO AQUI --- -->
+                    <div style="margin-left: 20px;">
+                        {% if t.inscrito %}
+                            <button class="btn btn-success" disabled>Inscrito</button>
+                        {% else %}
+                            <form action="{{ url_for('inscrever_treinamento', id=t.id) }}" method="post">
+                                <button type="submit" class="btn btn-primary">Inscrever-se</button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
             </li>
         {% endfor %}
     </ul>

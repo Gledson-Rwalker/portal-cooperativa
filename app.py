@@ -40,6 +40,27 @@ def sanitize_cpf(cpf_string):
 @app.route('/')
 def index(): return render_template('login.html')
 
+@app.route('/inscrever/<int:id>', methods=['POST'])
+def inscrever_treinamento(id):
+    if not session.get('logged_in'): return redirect(url_for('index'))
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            'INSERT INTO inscricoes (id_treinamento, cpf_cooperado) VALUES (%s, %s)',
+            (id, session.get('cpf'))
+        )
+        conn.commit()
+    except psycopg2.IntegrityError:
+        # Ignora o erro se o usuário tentar se inscrever duas vezes (por exemplo, clicando rápido)
+        conn.rollback()
+    finally:
+        cur.close()
+        conn.close()
+        
+    return redirect(url_for('dashboard'))
+
 @app.route('/login', methods=['POST'])
 def login():
     cpf_digitado = sanitize_cpf(request.form['cpf'])
@@ -96,6 +117,10 @@ def dashboard():
     cur.execute('SELECT id_treinamento FROM presencas WHERE cpf_cooperado = %s', (session.get('cpf'),))
     presencas_confirmadas = {row['id_treinamento'] for row in cur.fetchall()}
     
+    # --- NOVA LÓGICA AQUI ---
+    cur.execute('SELECT id_treinamento FROM inscricoes WHERE cpf_cooperado = %s', (session.get('cpf'),))
+    inscricoes_feitas = {row['id_treinamento'] for row in cur.fetchall()}
+    
     cur.close()
     conn.close()
 
@@ -103,6 +128,7 @@ def dashboard():
         t['data_formatada'] = t['data_hora'].strftime('%d/%m/%Y às %H:%M')
         t['status_cooperado'] = 'futuro'
         t['is_finalizado'] = (t['status'] == 'encerrado')
+        t['inscrito'] = t['id'] in inscricoes_feitas # <-- Nova etiqueta!
 
         if t['id'] in presencas_confirmadas:
             t['status_cooperado'] = 'confirmada'
@@ -121,6 +147,10 @@ def detalhe_treinamento(id):
     cur.execute('SELECT * FROM treinamentos WHERE id = %s', (id,))
     treinamento = cur.fetchone()
     
+    # --- NOVA LÓGICA DE PROTEÇÃO AQUI ---
+    cur.execute('SELECT 1 FROM inscricoes WHERE id_treinamento = %s AND cpf_cooperado = %s', (id, session.get('cpf')))
+    inscrito = cur.fetchone() is not None
+    
     cur.execute('SELECT 1 FROM presencas WHERE id_treinamento = %s AND cpf_cooperado = %s', (id, session.get('cpf')))
     presenca_ja_confirmada = cur.fetchone() is not None
     
@@ -129,7 +159,8 @@ def detalhe_treinamento(id):
 
     if treinamento:
         treinamento['data_formatada'] = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
-        mostrar_botao = (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
+        # O botão só aparece se o tempo estiver certo E o cooperado estiver inscrito
+        mostrar_botao = inscrito and (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
         return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada)
     else: return "<h1>Treinamento não encontrado!</h1>", 404
 
