@@ -88,14 +88,11 @@ def dashboard():
     if not session.get('logged_in'): return redirect(url_for('index'))
     
     conn = get_db_connection()
-    # Usamos RealDictCursor para obter os resultados como dicionários, facilitando o acesso no template
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
-    # Busca todos os treinamentos
     cur.execute('SELECT * FROM treinamentos ORDER BY data_hora DESC')
     treinamentos = cur.fetchall()
     
-    # Busca as presenças do cooperado logado
     cur.execute('SELECT id_treinamento FROM presencas WHERE cpf_cooperado = %s', (session.get('cpf'),))
     presencas_confirmadas = {row['id_treinamento'] for row in cur.fetchall()}
     
@@ -104,12 +101,15 @@ def dashboard():
 
     for t in treinamentos:
         t['data_formatada'] = t['data_hora'].strftime('%d de %B de %Y às %H:%M')
+        
+        # --- LÓGICA DE STATUS ATUALIZADA ---
+        t['status_cooperado'] = 'futuro' # Começamos com o padrão
+        t['is_finalizado'] = (t['status'] == 'encerrado') # Nova etiqueta!
+
         if t['id'] in presencas_confirmadas:
             t['status_cooperado'] = 'confirmada'
-        elif t['status'] == 'encerrado':
+        elif t['status'] == 'encerrado': # A lógica de "faltou" continua a mesma
             t['status_cooperado'] = 'faltou'
-        else:
-            t['status_cooperado'] = 'futuro'
             
     return render_template('dashboard.html', nome=session.get('nome'), treinamentos=treinamentos)
 

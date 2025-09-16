@@ -17,6 +17,10 @@
                     {% elif t.status_cooperado == 'faltou' %}
                         <span class="badge bg-danger">Faltou</span>
                     {% endif %}
+
+                    {% if t.is_finalizado %}
+                        <span class="badge bg-secondary">Finalizado</span>
+                    {% endif %}
                 </h4>
                 <p><strong>Data:</strong> {{ t.data_formatada }}</p>
                 <p><strong>Instrutor:</strong> {{ t.instrutor }}</p>
