@@ -10,7 +10,6 @@
     </div>
     <p>Total de cooperados na base: <strong>{{ cooperados|length }}</strong></p>
     
-    <!-- --- BARRA DE FILTRO ADICIONADA AQUI --- -->
     <div class="form-group">
         <label for="searchInput">Buscar por Nome ou CPF:</label>
         <input type="text" id="searchInput" class="form-control" onkeyup="filterTable()" placeholder="Digite para buscar...">
@@ -23,13 +22,15 @@
                 <th>CPF</th>
                 <th>Email</th>
                 <th>Perfil Completo?</th>
+                <!-- --- NOVA COLUNA AQUI --- -->
+                <th>Ações</th>
             </tr>
         </thead>
         <tbody>
             {% for cooperado in cooperados %}
             <tr>
-                <!-- O nome agora é um link para a nova página de detalhes -->
-                <td><a href="{{ url_for('detalhe_cooperado', cpf=cooperado.cpf) }}">{{ cooperado.nome }}</a></td>
+                <!-- O nome agora é apenas texto, sem link -->
+                <td>{{ cooperado.nome }}</td>
                 <td>{{ cooperado.cpf }}</td>
                 <td>{{ cooperado.email }}</td>
                 <td>
@@ -39,13 +40,17 @@
                         <span class="badge bg-danger">Não</span>
                     {% endif %}
                 </td>
+                <!-- --- NOVO BOTÃO AQUI --- -->
+                <td>
+                    <a href="{{ url_for('detalhe_cooperado', cpf=cooperado.cpf) }}" class="btn btn-sm btn-info">Perfil</a>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
 
-<!-- JAVASCRIPT PARA O FILTRO EM TEMPO REAL -->
+<!-- O JavaScript do filtro continua o mesmo -->
 <script>
 function filterTable() {
     const input = document.getElementById("searchInput");
@@ -53,7 +58,7 @@ function filterTable() {
     const table = document.getElementById("cooperadosTable");
     const tr = table.getElementsByTagName("tr");
 
-    for (let i = 1; i < tr.length; i++) { // Começa em 1 para pular o cabeçalho
+    for (let i = 1; i < tr.length; i++) {
         let tdNome = tr[i].getElementsByTagName("td")[0];
         let tdCpf = tr[i].getElementsByTagName("td")[1];
         if (tdNome || tdCpf) {
