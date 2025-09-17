@@ -157,7 +157,6 @@ def detalhe_treinamento(id):
     cur.execute('SELECT * FROM treinamentos WHERE id = %s', (id,))
     treinamento = cur.fetchone()
     
-    # --- NOVA LÓGICA DE PROTEÇÃO AQUI ---
     cur.execute('SELECT 1 FROM inscricoes WHERE id_treinamento = %s AND cpf_cooperado = %s', (id, session.get('cpf')))
     inscrito = cur.fetchone() is not None
     
@@ -168,11 +167,14 @@ def detalhe_treinamento(id):
     conn.close()
 
     if treinamento:
-        treinamento['data_formatada'] = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
-        # O botão só aparece se o tempo estiver certo E o cooperado estiver inscrito
+        data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
         mostrar_botao = inscrito and (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
-        return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada)
-    else: return "<h1>Treinamento não encontrado!</h1>", 404
+        
+        # --- CORREÇÃO PRINCIPAL AQUI ---
+        # Adicionamos 'data_formatada=data_formatada' para enviar a variável para o HTML
+        return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada, data_formatada=data_formatada)
+    else: 
+        return "<h1>Treinamento não encontrado!</h1>", 404
 
 @app.route('/confirmar-presenca/<int:id>', methods=['POST'])
 def confirmar_presenca(id):
