@@ -13,6 +13,8 @@
         <a href="{{ url_for('add_training_page') }}" class="btn btn-primary">Adicionar Novo Treinamento</a>
         <button id="openImportModal" class="btn btn-success">Importar Cooperados</button>
         <a href="{{ url_for('view_cooperados') }}" class="btn btn-info">Visualizar Cooperados</a>
+        <!-- --- NOVO BOTÃO AQUI --- -->
+        <button id="openReportModal" class="btn btn-warning">Relatório de Inscritos</button>
     </div>
 
     <h3>Treinamentos Cadastrados</h3>
@@ -32,7 +34,6 @@
                 <td>{{ t.titulo }}</td>
                 <td>{{ t.data_hora }}</td>
                 <td>
-                    <!-- --- ESTRUTURA CORRIGIDA AQUI --- -->
                     <div class="action-buttons">
                         {% if t.status == 'encerrado' %}
                             <span class="badge bg-secondary">Encerrado</span>
@@ -49,7 +50,6 @@
                     </div>
                 </td>
                 <td>
-                    <!-- --- ESTRUTURA CORRIGIDA AQUI --- -->
                     <div class="action-buttons">
                         <a href="{{ url_for('ver_lista_presenca', id=t.id) }}" class="btn btn-sm btn-primary">Certificados</a>
                         {% if t.status != 'encerrado' %}
@@ -67,7 +67,7 @@
     </table>
 </div>
 
-<!-- A JANELA MODAL -->
+<!-- JANELA MODAL DE IMPORTAÇÃO (JÁ EXISTENTE) -->
 <div id="importModal" class="modal">
     <div class="modal-content">
         <span class="close-button">&times;</span>
@@ -86,17 +86,54 @@
     </div>
 </div>
 
-<!-- JAVASCRIPT PARA CONTROLAR A MODAL -->
-<script>
-    const modal = document.getElementById('importModal');
-    const openBtn = document.getElementById('openImportModal');
-    const closeBtn = document.querySelector('.close-button');
+<!-- --- NOVA JANELA MODAL PARA O RELATÓRIO --- -->
+<div id="reportModal" class="modal">
+    <div class="modal-content">
+        <span class="close-button">&times;</span>
+        <h2>Relatório de Inscritos</h2>
+        <p>Selecione um treinamento para ver a lista de todos os cooperados inscritos.</p>
+        
+        <form action="{{ url_for('report_inscritos') }}" method="get" target="_blank">
+            <div class="form-group">
+                <label for="training_select">Selecione o Treinamento:</label>
+                <select id="training_select" name="training_id" class="form-control" required>
+                    <option value="" disabled selected>-- Escolha um treinamento --</option>
+                    {% for t in treinamentos %}
+                        <option value="{{ t.id }}">{{ t.titulo }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Gerar Relatório</button>
+        </form>
+    </div>
+</div>
 
-    openBtn.onclick = function() { modal.style.display = 'block'; }
-    closeBtn.onclick = function() { modal.style.display = 'none'; }
+<!-- JAVASCRIPT ATUALIZADO PARA CONTROLAR AS DUAS MODAIS -->
+<script>
+    // Controle da Modal de Importação
+    const importModal = document.getElementById('importModal');
+    const openImportBtn = document.getElementById('openImportModal');
+    const closeImportBtn = importModal.querySelector('.close-button');
+
+    openImportBtn.onclick = function() { importModal.style.display = 'block'; }
+    closeImportBtn.onclick = function() { importModal.style.display = 'none'; }
+
+    // Controle da Modal de Relatório
+    const reportModal = document.getElementById('reportModal');
+    const openReportBtn = document.getElementById('openReportModal');
+    // Usamos querySelector para pegar o botão de fechar específico desta modal
+    const closeReportBtn = reportModal.querySelector('.close-button');
+
+    openReportBtn.onclick = function() { reportModal.style.display = 'block'; }
+    closeReportBtn.onclick = function() { reportModal.style.display = 'none'; }
+
+    // Fecha a modal se clicar fora dela
     window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
+        if (event.target == importModal) {
+            importModal.style.display = 'none';
+        }
+        if (event.target == reportModal) {
+            reportModal.style.display = 'none';
         }
     }
 </script>

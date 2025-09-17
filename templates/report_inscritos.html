@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+
+{% block title %}Relatório de Inscritos{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="header">
+        <h2>Relatório de Inscritos</h2>
+    </div>
+    <h4>Treinamento: {{ treinamento.titulo }}</h4>
+    <p>Total de inscritos: <strong>{{ inscritos|length }}</strong></p>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome Completo</th>
+                <th>CPF</th>
+                <th>Email</th>
+                <th>Telefone</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for inscrito in inscritos %}
+            <tr>
+                <td>{{ inscrito.nome }}</td>
+                <td>{{ inscrito.cpf }}</td>
+                <td>{{ inscrito.email }}</td>
+                <td>{{ inscrito.telefone }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">Nenhum cooperado inscrito neste treinamento até o momento.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

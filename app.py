@@ -214,6 +214,44 @@ def admin_login_submit():
         return redirect(url_for('admin_dashboard'))
     else: return "<h1>Senha incorreta!</h1>"
 
+# --- NOVA ROTA PARA O RELATÓRIO DE INSCRITOS ---
+@app.route('/admin/report/inscritos')
+def report_inscritos():
+    if not session.get('logged_in') or not session.get('is_admin'):
+        return redirect(url_for('admin_login_page'))
+
+    # Pega o ID do treinamento selecionado na lista suspensa
+    training_id = request.args.get('training_id', type=int)
+    if not training_id:
+        return "<h1>Erro: Nenhum treinamento selecionado.</h1>"
+
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+
+    # 1. Busca os detalhes do treinamento selecionado
+    cur.execute('SELECT * FROM treinamentos WHERE id = %s', (training_id,))
+    treinamento = cur.fetchone()
+
+    if not treinamento:
+        cur.close()
+        conn.close()
+        return "<h1>Erro: Treinamento não encontrado.</h1>"
+
+    # 2. Busca todos os cooperados que se inscreveram neste treinamento
+    cur.execute("""
+        SELECT c.nome, c.cpf, c.email, c.telefone
+        FROM inscricoes i
+        JOIN cooperados c ON i.cpf_cooperado = c.cpf
+        WHERE i.id_treinamento = %s
+        ORDER BY c.nome
+    """, (training_id,))
+    inscritos = cur.fetchall()
+
+    cur.close()
+    conn.close()
+
+    return render_template('report_inscritos.html', treinamento=treinamento, inscritos=inscritos)
+
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))
