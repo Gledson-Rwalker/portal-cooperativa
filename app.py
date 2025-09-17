@@ -506,5 +506,95 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
 
     return send_from_directory(temp_dir, filename, as_attachment=True)
 
+# --- NOVA ROTA PARA O COOPERADO GERAR SEU PRÓPRIO CERTIFICADO ---
+@app.route('/cooperado/generate-certificate/<int:training_id>')
+def generate_certificate_cooperado(training_id):
+    # 1. Segurança: O usuário está logado?
+    if not session.get('logged_in'):
+        return redirect(url_for('index'))
+
+    cpf_cooperado = session.get('cpf')
+
+    # 2. Segurança: O cooperado REALMENTE confirmou presença neste treinamento?
+    conn = get_db_connection()
+    cur = conn.cursor(cursor_factory=RealDictCursor)
+    cur.execute('SELECT 1 FROM presencas WHERE id_treinamento = %s AND cpf_cooperado = %s', (training_id, cpf_cooperado))
+    presenca_confirmada = cur.fetchone() is not None
+    
+    if not presenca_confirmada:
+        cur.close()
+        conn.close()
+        return "<h1>Acesso negado: Você não confirmou presença neste treinamento.</h1>"
+
+    # 3. Se a segurança passou, busca os dados para o certificado
+    cur.execute('SELECT * FROM treinamentos WHERE id = %s', (training_id,))
+    treinamento = cur.fetchone()
+    cur.execute('SELECT * FROM cooperados WHERE cpf = %s', (cpf_cooperado,))
+    participante = cur.fetchone()
+    cur.close()
+    conn.close()
+
+    if not treinamento or not participante:
+        return "<h1>Dados não encontrados para gerar o certificado.</h1>"
+
+    # O resto da lógica de geração é exatamente a mesma da função do admin
+    texto_principal = """Certificamos, para os devidos fins, que {NOME_COOPERADO},
+portador(a) do CPF {CPF_COOPERADO}, participou com êxito do treinamento de
+'{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
+totalizando uma carga horária de {CARGA_HORARIA} horas."""
+
+    data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y')
+    texto_final = texto_principal.format(
+        NOME_COOPERADO=participante['nome'],
+        CPF_COOPERADO=participante['cpf'],
+        NOME_TREINAMENTO=treinamento['titulo'],
+        DATA_TREINAMENTO=data_formatada,
+        CARGA_HORARIA=treinamento['carga_horaria']
+    )
+
+    try:
+        base_path = app.root_path
+        font_titulo_path = os.path.join(base_path, 'static', 'Autography.ttf')
+        font_corpo_path = os.path.join(base_path, 'static', 'arial.ttf')
+        background_path = os.path.join(base_path, 'static', 'certificate_assets', 'fundo_certificado.png')
+
+        font_titulo = ImageFont.truetype(font_titulo_path, 140)
+        font_corpo = ImageFont.truetype(font_corpo_path, 70)
+        font_data = ImageFont.truetype(font_corpo_path, 50)
+    except IOError as e:
+        return f"<h1>Erro ao carregar fonte ou imagem: {e}.</h1>"
+
+    if not os.path.exists(background_path):
+        return "<h1>Erro: Imagem de fundo não encontrada.</h1>"
+
+    img = Image.open(background_path).convert('RGB')
+    largura, altura = img.size
+    draw = ImageDraw.Draw(img)
+    
+    titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
+    titulo_x = (largura - (titulo_bbox[2] - titulo_bbox[0])) / 2
+    draw.text((titulo_x, 1150), participante['nome'], font=font_titulo, fill='#00a5b6')
+
+    y_text = 1350
+    lines = wrap(texto_final, width=60)
+    for line in lines:
+        line_bbox = draw.textbbox((0, 0), line, font=font_corpo)
+        line_x = (largura - (line_bbox[2] - line_bbox[0])) / 2
+        draw.text((line_x, y_text), line, font=font_corpo, fill='black')
+        y_text += 90
+
+    data_final = f"Salvador, {data_formatada}"
+    data_bbox = draw.textbbox((0, 0), data_final, font=font_data)
+    data_x = largura - (data_bbox[2] - data_bbox[0]) - 250
+    draw.text((data_x, altura - 400), data_final, font=font_data, fill='black')
+
+    temp_dir = '/tmp'
+    filename = f"certificado_{training_id}_{cpf_cooperado}.pdf"
+    filepath = os.path.join(temp_dir, filename)
+    
+    img.save(filepath, "PDF", resolution=150.0)
+
+    return send_from_directory(temp_dir, filename, as_attachment=True)
+
 if __name__ == '__main__':
     app.run(debug=True)

@@ -4,9 +4,27 @@
 
 {% block content %}
     <div class="container">
-        <div class="header">
-            <h2>Lista de Presença: {{ treinamento.titulo }}</h2>
-        </div>
+            <div>
+        <h3>Lista de Presença</h3>
+        
+        {% if presenca_ja_confirmada %}
+            <!-- Se a presença já foi confirmada, mostramos a mensagem e o botão de gerar -->
+            <p style="color: #198754; font-weight: bold;">Sua presença foi confirmada com sucesso!</p>
+            <a href="{{ url_for('generate_certificate_cooperado', training_id=treinamento.id) }}" class="btn btn-success" target="_blank">
+                Gerar Certificado
+            </a>
+        
+        {% elif treinamento.presenca_liberada %}
+            <!-- Se a presença está liberada mas ainda não foi confirmada, mostramos o botão de confirmar -->
+            <form action="{{ url_for('confirmar_presenca', id=treinamento.id) }}" method="post">
+                <button type="submit" class="btn btn-primary">Confirmar Minha Presença</button>
+            </form>
+        
+        {% else %}
+            <!-- Se a presença ainda não foi liberada, mostramos a mensagem de espera -->
+            <p>A lista de presença será liberada pelo instrutor ao final do treinamento.</p>
+        {% endif %}
+    </div>
         <p>Total de participantes: {{ participantes|length }}</p>
         <table class="table presence-table">
             <thead>
