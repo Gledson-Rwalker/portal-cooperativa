@@ -223,6 +223,12 @@ def admin_dashboard():
     treinamentos = cur.fetchall()
     cur.close()
     conn.close()
+
+    # --- CORREÇÃO PRINCIPAL AQUI ---
+    # Adicionamos este laço para formatar a data de cada treinamento
+    for t in treinamentos:
+        t['data_hora'] = t['data_hora'].strftime('%d/%m/%Y %H:%M')
+        
     return render_template('admin_dashboard.html', treinamentos=treinamentos)
 
 # --- NOVA ROTA PARA VER OS DETALHES DE UM COOPERADO ---
