@@ -167,12 +167,21 @@ def detalhe_treinamento(id):
     conn.close()
 
     if treinamento:
-        data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
+        treinamento['data_formatada'] = treinamento['data_hora'].strftime('%d/%m/%Y às %H:%M')
         mostrar_botao = inscrito and (treinamento['data_hora'] - timedelta(minutes=5)) <= datetime.now()
         
-        # --- CORREÇÃO PRINCIPAL AQUI ---
-        # Adicionamos 'data_formatada=data_formatada' para enviar a variável para o HTML
-        return render_template('treinamento_detalhe.html', treinamento=treinamento, mostrar_botao=mostrar_botao, presenca_ja_confirmada=presenca_ja_confirmada, data_formatada=data_formatada)
+        # --- MUDANÇA PRINCIPAL AQUI ---
+        # Enviamos a data em formato ISO para o JavaScript usar
+        training_iso_time = treinamento['data_hora'].isoformat()
+        
+        return render_template(
+            'treinamento_detalhe.html', 
+            treinamento=treinamento, 
+            mostrar_botao=mostrar_botao, 
+            presenca_ja_confirmada=presenca_ja_confirmada,
+            data_formatada=treinamento['data_formatada'],
+            training_iso_time=training_iso_time # <-- Nova variável
+        )
     else: 
         return "<h1>Treinamento não encontrado!</h1>", 404
 
