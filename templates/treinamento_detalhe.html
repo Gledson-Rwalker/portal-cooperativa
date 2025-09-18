@@ -16,17 +16,12 @@
     
     <div>
         <h3>Acesso à Sala Virtual</h3>
-        
-        <!-- --- ESTRUTURA DO CONTADOR AQUI --- -->
-        <!-- O botão começa escondido -->
+        <!-- A lógica do contador já está aqui e correta -->
         <div id="enter-button-container" style="display: none;">
             <a href="//{{ treinamento.link_meet.replace('https://', '').replace('http://', '') }}" class="btn btn-success" target="_blank">ENTRAR NA SALA</a>
         </div>
-
-        <!-- O contador começa visível -->
         <div id="countdown-container">
             <p>O acesso será liberado em:</p>
-            <!-- O JavaScript vai preencher este h3 -->
             <h3 id="countdown-timer" style="color: #0d6efd;">Calculando...</h3>
         </div>
     </div>
@@ -35,52 +30,50 @@
 
     <div>
         <h3>Lista de Presença</h3>
-        <!-- ... (o resto da lógica da lista de presença continua a mesma) ... -->
+        <!-- --- LÓGICA DO BOTÃO DE PRESENÇA CORRIGIDA E NO LUGAR CERTO --- -->
+        {% if presenca_ja_confirmada %}
+            <p style="color: #198754; font-weight: bold;">Sua presença foi confirmada com sucesso!</p>
+            <a href="{{ url_for('generate_certificate_cooperado', training_id=treinamento.id) }}" class="btn btn-success" target="_blank">
+                Gerar Certificado
+            </a>
+        {% elif treinamento.presenca_liberada %}
+            <form action="{{ url_for('confirmar_presenca', id=treinamento.id) }}" method="post">
+                <button type="submit" class="btn btn-primary">Confirmar Minha Presença</button>
+            </form>
+        {% else %}
+            <p>A lista de presença será liberada pelo instrutor ao final do treinamento.</p>
+        {% endif %}
     </div>
 
     <a href="{{ url_for('dashboard') }}" class="btn btn-secondary" style="margin-top: 1rem;">Voltar para a Lista</a>
 </div>
 
-<!-- --- O JAVASCRIPT QUE FAZ A MÁGICA --- -->
+<!-- O JAVASCRIPT DO CONTADOR (NÃO MUDA) -->
 <script>
-    // Pega os elementos da página
     const countdownContainer = document.getElementById('countdown-container');
     const countdownElement = document.getElementById('countdown-timer');
     const buttonContainer = document.getElementById('enter-button-container');
-
-    // Pega a data do treinamento que o Python nos enviou
     const trainingISOString = "{{ training_iso_time }}";
     const trainingTime = new Date(trainingISOString).getTime();
-
-    // Calcula o momento exato em que o botão deve ser liberado (5 minutos antes)
     const unlockTime = trainingTime - (5 * 60 * 1000);
-
-    // Função que atualiza o contador a cada segundo
     const timerInterval = setInterval(function() {
         const now = new Date().getTime();
         const distance = unlockTime - now;
-
-        // Se o tempo já passou, libera o botão
         if (distance < 0) {
-            clearInterval(timerInterval); // Para o contador
-            countdownContainer.style.display = 'none'; // Esconde o contador
-            buttonContainer.style.display = 'block'; // Mostra o botão
+            clearInterval(timerInterval);
+            countdownContainer.style.display = 'none';
+            buttonContainer.style.display = 'block';
             return;
         }
-
-        // Calcula dias, horas, minutos e segundos
         const days = Math.floor(distance / (1000 * 60 * 60 * 24));
         const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-        // Monta o texto do contador e exibe na tela
         let countdownText = "";
         if (days > 0) countdownText += days + "d ";
         if (hours > 0 || days > 0) countdownText += hours + "h ";
         countdownText += minutes + "m " + seconds + "s ";
         countdownElement.innerHTML = countdownText;
-
-    }, 1000); // Roda a cada 1000ms (1 segundo)
+    }, 1000);
 </script>
 {% endblock %}
