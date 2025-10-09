@@ -59,16 +59,26 @@
 <script>
 function filterTable() {
     const input = document.getElementById("searchInput");
-    const filter = input.value.toUpperCase();
+    // 1. Limpa o termo de busca, removendo pontos, hífens e espaços
+    const filter = input.value.toUpperCase().replace(/[.\-\s]/g, '');
     const table = document.getElementById("cooperadosTable");
     const tr = table.getElementsByTagName("tr");
 
-    for (let i = 1; i < tr.length; i++) {
+    for (let i = 1; i < tr.length; i++) { // Começa em 1 para pular o cabeçalho
         let tdNome = tr[i].getElementsByTagName("td")[0];
         let tdCpf = tr[i].getElementsByTagName("td")[1];
         if (tdNome || tdCpf) {
-            let txtValue = (tdNome.textContent || tdNome.innerText) + " " + (tdCpf.textContent || tdCpf.innerText);
-            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            // 2. Pega o texto do nome e do CPF da tabela
+            let nomeText = tdNome.textContent || tdNome.innerText;
+            let cpfText = tdCpf.textContent || tdCpf.innerText;
+
+            // 3. Limpa o CPF da tabela também, para uma comparação justa
+            let cpfSanitized = cpfText.replace(/[.\-\s]/g, '');
+
+            // 4. Combina o nome e o CPF limpo para a busca
+            let txtValue = nomeText.toUpperCase() + " " + cpfSanitized;
+
+            if (txtValue.indexOf(filter) > -1) {
                 tr[i].style.display = "";
             } else {
                 tr[i].style.display = "none";
