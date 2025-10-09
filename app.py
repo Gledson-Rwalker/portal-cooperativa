@@ -569,7 +569,8 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
     img = Image.open(background_path).convert('RGB')
     largura, altura = img.size
     draw = ImageDraw.Draw(img)
-    
+
+    nome_formatado = participante['nome'].title() # <-- MÁGICA AQUI!
     titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
     titulo_x = (largura - (titulo_bbox[2] - titulo_bbox[0])) / 2
     draw.text((titulo_x, 1150), participante['nome'], font=font_titulo, fill='#00a5b6')
