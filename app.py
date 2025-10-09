@@ -537,14 +537,19 @@ def generate_certificate(training_id, cpf):
 
     if not treinamento or not participante: return "<h1>Dados não encontrados para gerar o certificado.</h1>"
 
+    # --- CORREÇÃO PRINCIPAL AQUI ---
+    # 1. Criamos a versão formatada do nome UMA ÚNICA VEZ.
+    nome_formatado = participante['nome'].title()
+
     texto_principal = """Certificamos, para os devidos fins, que {NOME_COOPERADO},
 portador(a) do CPF {CPF_COOPERADO}, participou com êxito do treinamento de
 '{NOME_TREINAMENTO}', realizado em {DATA_TREINAMENTO},
 totalizando uma carga horária de {CARGA_HORARIA} horas."""
 
     data_formatada = treinamento['data_hora'].strftime('%d/%m/%Y')
+    # 2. Usamos a variável formatada para preencher o corpo do texto.
     texto_final = texto_principal.format(
-        NOME_COOPERADO=participante['nome'],
+        NOME_COOPERADO=nome_formatado,
         CPF_COOPERADO=participante['cpf'],
         NOME_TREINAMENTO=treinamento['titulo'],
         DATA_TREINAMENTO=data_formatada,
@@ -569,12 +574,13 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
     img = Image.open(background_path).convert('RGB')
     largura, altura = img.size
     draw = ImageDraw.Draw(img)
-
-    nome_formatado = participante['nome'].title() # <-- MÁGICA AQUI!
-    titulo_bbox = draw.textbbox((0, 0), participante['nome'], font=font_titulo)
+    
+    # 3. Usamos a MESMA variável formatada para desenhar o título.
+    titulo_bbox = draw.textbbox((0, 0), nome_formatado, font=font_titulo)
     titulo_x = (largura - (titulo_bbox[2] - titulo_bbox[0])) / 2
-    draw.text((titulo_x, 1150), participante['nome'], font=font_titulo, fill='#00a5b6')
+    draw.text((titulo_x, 1150), nome_formatado, font=font_titulo, fill='#00a5b6')
 
+    # Corpo do texto
     y_text = 1350
     lines = wrap(texto_final, width=60)
     for line in lines:
@@ -583,6 +589,7 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
         draw.text((line_x, y_text), line, font=font_corpo, fill='black')
         y_text += 90
 
+    # Data no final
     data_final = f"Salvador, {data_formatada}"
     data_bbox = draw.textbbox((0, 0), data_final, font=font_data)
     data_x = largura - (data_bbox[2] - data_bbox[0]) - 250
@@ -594,7 +601,7 @@ totalizando uma carga horária de {CARGA_HORARIA} horas."""
     
     img.save(filepath, "PDF", resolution=150.0)
 
-    return send_from_directory(temp_dir, filename, as_attachment=True)
+    return send_from_directory(temp_dir, filename, as_attachment=False)
 
 # --- NOVA ROTA PARA O COOPERADO GERAR SEU PRÓPRIO CERTIFICADO ---
 @app.route('/cooperado/generate-certificate/<int:training_id>')
