@@ -261,6 +261,42 @@ def report_inscritos():
 
     return render_template('report_inscritos.html', treinamento=treinamento, inscritos=inscritos)
 
+# Rota para MOSTRAR a página do formulário
+@app.route('/admin/cooperados/add', methods=['GET'])
+def add_cooperado_page():
+    if not session.get('logged_in') or not session.get('is_admin'):
+        return redirect(url_for('admin_login_page'))
+    return render_template('add_cooperado.html')
+
+# Rota para PROCESSAR os dados do formulário
+@app.route('/admin/cooperados/add', methods=['POST'])
+def add_cooperado_submit():
+    if not session.get('logged_in') or not session.get('is_admin'):
+        return redirect(url_for('admin_login_page'))
+
+    nome = request.form['nome']
+    cpf = sanitize_cpf(request.form['cpf']) # Limpa o CPF
+
+    conn = get_db_connection()
+    cur = conn.cursor()
+
+    # 1. Verifica se o CPF já existe para evitar duplicatas
+    cur.execute('SELECT 1 FROM cooperados WHERE cpf = %s', (cpf,))
+    if cur.fetchone():
+        flash(f'Erro: O CPF {cpf} já está cadastrado no sistema.', 'danger')
+        cur.close()
+        conn.close()
+        return redirect(url_for('view_cooperados'))
+
+    # 2. Se não existe, insere o novo cooperado
+    cur.execute('INSERT INTO cooperados (nome, cpf) VALUES (%s, %s)', (nome, cpf))
+    conn.commit()
+    cur.close()
+    conn.close()
+
+    flash(f'Cooperado "{nome}" adicionado com sucesso!', 'success')
+    return redirect(url_for('view_cooperados'))
+
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if not session.get('logged_in') or not session.get('is_admin'): return redirect(url_for('admin_login_page'))

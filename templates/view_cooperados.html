@@ -6,6 +6,11 @@
 <div class="container">
     <div class="header">
         <h2>Cooperados Cadastrados</h2>
+        <div>
+            <!-- --- NOVO BOTÃO AQUI --- -->
+            <a href="{{ url_for('add_cooperado_page') }}" class="btn btn-success">Adicionar Cooperado</a>
+            <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Voltar ao Painel</a>
+        </div>
         <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">Voltar ao Painel</a>
     </div>
     <p>Total de cooperados na base: <strong>{{ cooperados|length }}</strong></p>
