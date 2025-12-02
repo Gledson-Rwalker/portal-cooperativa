@@ -13,10 +13,9 @@
     <ul style="list-style: none; padding: 0;">
         {% for t in treinamentos %}
             <li style="background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px;">
-                <!-- Usamos um container flexível para alinhar o conteúdo e o botão -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                     
-                    <!-- Div para o conteúdo do treinamento -->
+                    <!-- Conteúdo do Treinamento -->
                     <div>
                         <h4>
                             <a href="{{ url_for('detalhe_treinamento', id=t.id) }}">{{ t.titulo }}</a>
@@ -34,15 +33,19 @@
                         <p>{{ t.descricao }}</p>
                     </div>
                     
-                    <!-- Div para o botão de inscrição -->
+                    <!-- Botão de Inscrição (LÓGICA ALTERADA) -->
                     <div style="margin-left: 20px; flex-shrink: 0;">
                         {% if t.inscrito %}
                             <button class="btn btn-success" disabled>Inscrito</button>
+                        
                         {% elif t.ja_passou %}
-                            <!-- Se já passou e ele não se inscreveu, não mostramos nada -->
+                            <!-- MUDANÇA 1: Agora mostramos um botão cinza em vez de nada -->
+                            <button class="btn btn-secondary" disabled>Inscrições Encerradas</button>
+                        
                         {% else %}
                             <form action="{{ url_for('inscrever_treinamento', id=t.id) }}" method="post">
-                                <button type="submit" class="btn btn-primary">Inscrever-se</button>
+                                <!-- MUDANÇA 2: Mudamos o texto para forçar a atualização do Git -->
+                                <button type="submit" class="btn btn-primary">Realizar Inscrição</button>
                             </form>
                         {% endif %}
                     </div>
