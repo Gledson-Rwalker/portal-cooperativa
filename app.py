@@ -128,7 +128,7 @@ def dashboard():
     conn.close()
 
     # Pega a data e hora atuais UMA VEZ para otimização
-    agora = datetime.now()
+    agora = datetime.now() - timedelta(hours=3)
 
     for t in treinamentos:
         t['data_formatada'] = t['data_hora'].strftime('%d/%m/%Y às %H:%M')
