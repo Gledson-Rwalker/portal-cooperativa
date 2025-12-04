@@ -138,7 +138,7 @@ def dashboard():
         
         # --- NOVA LÓGICA AQUI ---
         # Adiciona a etiqueta que verifica se o treinamento já passou
-        t['ja_passou'] = t['data_hora'] < agora
+        t['ja_passou'] = (t['data_hora'] - timedelta(hours=1)) < agora
 
         if t['id'] in presencas_confirmadas:
             t['status_cooperado'] = 'confirmada'
