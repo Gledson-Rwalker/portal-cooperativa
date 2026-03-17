@@ -21,7 +21,7 @@ except locale.Error:
 app = Flask(__name__)
 app.secret_key = 'minha_chave_secreta_muito_segura_12345'
 app.config['CERTIFICATE_FOLDER'] = 'certificates'
-ADMIN_PASSWORD = "Gestão@2024!" 
+ADMIN_PASSWORD = "Gestao@2024!" 
 
 # --- FUNÇÃO DE CONEXÃO COM O BANCO DE DADOS ---
 def get_db_connection():
